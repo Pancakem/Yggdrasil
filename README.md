@@ -17,3 +17,15 @@ static void free_debug(void *p, unsigned long line) {
 
 #define FREE(n) free_debug(n, __LINE__);
 ```
+
+## Docker for cross-compilation
+Docker has excellent cross-platform support/
+This docker image `ev3dev/debian-stretch-cross` has a lot of
+development tools pre-installed.
+
+Preparing the docker image
+`docker pull ev3dev/debian-stretch-cross`
+
+Tag it with a shorter name
+`docker tag ev3dev/debian-stretch-cross dev-env`
+`docker run --rm -it -v <host-dir>:<working-container-dir> -w <working-container-dir> dev-env`
