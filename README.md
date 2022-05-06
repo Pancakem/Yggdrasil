@@ -48,3 +48,68 @@ Run
 ```sh
 qemu-arm-static -L /usr/arm-linux-gnueabi hello
 ```
+
+A simple program that prints out a human readable name of a type
+```cpp
+#if __has_include(<cxxabi.h>)
+#include <cxxabi.h>
+#include <memory>
+#endif
+
+#include <iostream>
+
+template <typename T>
+std::string demangle()
+{
+#if __has_include(<cxxabi.h>)
+    int status = -1;
+    std::unique_ptr<char, void(*)(void*)> demangled_name
+    {
+        abi::__cxa_demangle(typeid(std::remove_reference_t<T>).name(), NULL, NULL, &status),
+        std::free
+    };
+    if(status == 0)
+        return demangled_name.get();
+    else
+        return typeid(std::remove_reference_t<T>).name();
+#else
+    return typeid(std::remove_reference_t<T>).name();
+#endif
+}
+
+namespace B {
+    namespace {
+        struct A {};
+    };
+};
+
+int main() {
+    std::cout << demangle<B::A>();
+}
+
+```
+
+void pointer arithmetic
+```
+#include <stdio.h>
+#include <stdbool.h>
+
+int main(void) {
+
+    int x = 5;
+    void *p = &x;
+    printf("%p\n", p);
+    p++;
+    printf("%p\n", p);
+    // the above is UB.
+    // Notice p is incremented by a byte
+    // should not perform pointer arithmetic
+    // on incomplete types which void is UB
+}
+
+```
+
+I met this error `libxx.so undefined reference to xxx@glibc` when cross-compiling
+something.
+Fixed it by recompiling the shared library using the same compiler version
+I had been using.
